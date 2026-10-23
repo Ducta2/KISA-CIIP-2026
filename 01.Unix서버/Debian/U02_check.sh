@@ -5,19 +5,19 @@
 # @Version: 1.0.1
 # @Last Updated: 2026-01-16
 # ============================================================================
-# [점검 항목 상세]
+# [Chi tiết hạng mục kiểm tra]
 # @ID          : U-02
 # @Category    : Unix Server
 # @Platform    : Debian
 # @Severity    : 상
-# @Title       : 비밀번호 관리 정책 설정
-# @Description : 비밀번호 복잡성 설정 및 최소/최대 사용 기간 확인
-# @Reference   : 2026 KISA 주요정보통신기반시설 기술적 취약점 분석·평가 상세 가이드
+# @Title       : Thiết lập chính sách quản lý mật khẩu
+# @Description : mật khẩu 복잡성 cấu hình 및 최소/최대 사용 기간 kiểm tra
+# @Reference   : 2026 KISA 주요정보통신기반시설 기술적 điểm yếu bảo mật 분석·평가 상세 가이드
 # ==============================================================================
 
 set -euo pipefail
 
-# 스크립트 디렉토리 설정
+# 스크립트 디렉토리 cấu hình
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LIB_DIR="${SCRIPT_DIR}/../../lib"
 
@@ -31,15 +31,15 @@ source "${LIB_DIR}/metadata_parser.sh"
 
 
 ITEM_ID="U-02"
-ITEM_NAME="비밀번호 관리 정책 설정"
+ITEM_NAME="Thiết lập chính sách quản lý mật khẩu"
 SEVERITY="상"
 
 # 가이드라인 정보
-GUIDELINE_PURPOSE="사용자의 비밀번호 복잡성과 주기적 변경을 통해 시스템 보안을 강화하기 위함"
-GUIDELINE_THREAT="비밀번호 관련 정책이 설정되지 않을 경우, 비인가자의 각종 공격(무차별 대입 공격, 사전 대입 공격 등)에 의해 비밀번호가 노출될 위험이 존재함"
-GUIDELINE_CRITERIA_GOOD="비밀번호 관리 정책이 설정된 경우"
-GUIDELINE_CRITERIA_BAD="비밀번호 관리 정책이 설정되지 않은 경우"
-GUIDELINE_REMEDIATION="root 계정을 포함한 사용자 계정의 비밀번호를 영문, 숫자, 특수 문자를 포함하여 최소 8 자리 이상 및 최소 사용 기간 1일, 최대 사용 기간 90일, 최근 비밀번호 기억 4회 이상으로 설정"
+GUIDELINE_PURPOSE="사용자의 mật khẩu 복잡성과 주기적 변경을 통해 시스템 보안을 강화하기 위함"
+GUIDELINE_THREAT="mật khẩu 관련 정책이 cấu hình되지 않을 경우, 비인가자의 각종 공격(무차별 대입 공격, 사전 대입 공격 등)에 의해 mật khẩu가 노출될 위험이 존재함"
+GUIDELINE_CRITERIA_GOOD="mật khẩu 관리 정책이 cấu hình된 경우"
+GUIDELINE_CRITERIA_BAD="mật khẩu 관리 정책이 cấu hình되지 않은 경우"
+GUIDELINE_REMEDIATION="root 계정을 포함한 사용자 계정의 mật khẩu를 영문, 숫자, 특수 문자를 포함하여 최소 8 자리 이상 및 최소 사용 기간 1일, 최대 사용 기간 90일, 최근 mật khẩu 기억 4회 이상으로 cấu hình"
 
 # ============================================================================
 # 진단 함수
@@ -55,8 +55,8 @@ diagnose() {
     local command_executed=""
 
     # 진단 로직 구현
-    # 1) PAM 복잡성 설정 확인 (pam_pwquality.so 또는 pam_cracklib.so)
-    # 2) /etc/login.defs의 PASS_MAX_DAYS, PASS_MIN_DAYS 확인
+    # 1) PAM 복잡성 cấu hình kiểm tra (pam_pwquality.so 또는 pam_cracklib.so)
+    # 2) /etc/login.defs의 PASS_MAX_DAYS, PASS_MIN_DAYS kiểm tra
 
     local is_secure=false
     local config_details=""
@@ -70,7 +70,7 @@ diagnose() {
     local newline=$'\n'
 
     # ============================================================================
-    # 1) PAM 복잡성 설정 확인
+    # 1) PAM 복잡성 cấu hình kiểm tra
     # ============================================================================
     local pam_files=(
         "/etc/pam.d/common-password"
@@ -84,7 +84,7 @@ diagnose() {
 
     for pam_file in "${pam_files[@]}"; do
         if [ -f "$pam_file" ]; then
-            # pam_pwquality.so 또는 pam_cracklib.so 확인
+            # pam_pwquality.so 또는 pam_cracklib.so kiểm tra
             if grep -q "pam_pwquality.so" "$pam_file"; then
                 pam_module="pam_pwquality.so"
                 found_pam_module=true
@@ -100,10 +100,10 @@ diagnose() {
     done || true
 
     if [ "$found_pam_module" = true ]; then
-        # PAM 설정의 raw output 저장
+        # PAM cấu hình의 raw output 저장
         pam_output=$(grep -E "^[\s]*password.*${pam_module}" "$active_pam_file" 2>/dev/null || echo "")
 
-        # 각 설정값 추출
+        # 각 cấu hình값 추출
         local minlen=$(echo "$pam_output" | grep -oP 'minlen=\K[0-9]+' | head -1)
         local ucredit=$(echo "$pam_output" | grep -oP 'ucredit=\K-?[0-9]+' | head -1)
         local lcredit=$(echo "$pam_output" | grep -oP 'lcredit=\K-?[0-9]+' | head -1)
@@ -111,13 +111,13 @@ diagnose() {
         local ocredit=$(echo "$pam_output" | grep -oP 'ocredit=\K-?[0-9]+' | head -1)
 
         config_details="[PAM 복잡성] ${pam_module}: "
-        config_details="${config_details}minlen=${minlen:-미설정}, "
-        config_details="${config_details}ucredit=${ucredit:-미설정}, "
-        config_details="${config_details}lcredit=${lcredit:-미설정}, "
-        config_details="${config_details}dcredit=${dcredit:-미설정}, "
-        config_details="${config_details}ocredit=${ocredit:-미설정}"
+        config_details="${config_details}minlen=${minlen:-미cấu hình}, "
+        config_details="${config_details}ucredit=${ucredit:-미cấu hình}, "
+        config_details="${config_details}lcredit=${lcredit:-미cấu hình}, "
+        config_details="${config_details}dcredit=${dcredit:-미cấu hình}, "
+        config_details="${config_details}ocredit=${ocredit:-미cấu hình}"
 
-        # 판정: 모든 설정이 적절한지 확인
+        # 판정: 모든 cấu hình이 적절한지 kiểm tra
         # minlen >= 8, ucredit <= -1, lcredit <= -1, dcredit <= -1, ocredit <= -1
         local minlen_ok=false
         local ucredit_ok=false
@@ -171,7 +171,7 @@ diagnose() {
     fi
 
     # ============================================================================
-    # 2) 비밀번호 사용 기간 확인 (/etc/login.defs)
+    # 2) mật khẩu 사용 기간 kiểm tra (/etc/login.defs)
     # ============================================================================
     local login_defs_file="/etc/login.defs"
     local pass_max_days=""
@@ -184,7 +184,7 @@ diagnose() {
         pass_max_days=$(echo "$login_defs_output" | grep "PASS_MAX_DAYS" | awk '{print $2}')
         pass_min_days=$(echo "$login_defs_output" | grep "PASS_MIN_DAYS" | awk '{print $2}')
 
-        config_details="${config_details} | [사용 기간] PASS_MAX_DAYS=${pass_max_days:-미설정}, PASS_MIN_DAYS=${pass_min_days:-미설정}"
+        config_details="${config_details} | [사용 기간] PASS_MAX_DAYS=${pass_max_days:-미cấu hình}, PASS_MIN_DAYS=${pass_min_days:-미cấu hình}"
 
         # 판정: PASS_MAX_DAYS <= 90, PASS_MIN_DAYS >= 1
         local max_days_ok=false
@@ -203,14 +203,14 @@ diagnose() {
         fi
     else
         config_details="${config_details} | [사용 기간] /etc/login.defs 파일 없음"
-        # 원본 ls -l 출력 저장 (파일 존재 여부 확인)
+        # 원본 ls -l 출력 저장 (파일 존재 여부 kiểm tra)
         login_defs_output=$(ls -l "$login_defs_file" 2>/dev/null || echo "파일 없음: ${login_defs_file}")
     fi
 
     # ============================================================================
     # 최종 판정
     # ============================================================================
-    # 복잡성 설정과 사용 기간 설정 모두 확인되어야 양호
+    # 복잡성 cấu hình과 사용 기간 cấu hình 모두 kiểm tra되어야 양호
     if [ "$complexity_ok" = true ] && [ "$age_ok" = true ]; then
         is_secure=true
     fi
@@ -218,15 +218,15 @@ diagnose() {
     if [ "$found_pam_module" = false ]; then
         diagnosis_result="VULNERABLE"
         status="취약"
-        inspection_summary="비밀번호 복잡성 정책 미설정 (PAM 모듈 없음)"
+        inspection_summary="mật khẩu 복잡성 정책 미cấu hình (PAM 모듈 없음)"
     elif [ "$is_secure" = true ]; then
         diagnosis_result="GOOD"
         status="양호"
-        inspection_summary="비밀번호 관리 정책 적절하게 설정됨 (${config_details})"
+        inspection_summary="mật khẩu 관리 정책 적절하게 cấu hình됨 (${config_details})"
     else
         diagnosis_result="VULNERABLE"
         status="취약"
-        inspection_summary="비밀번호 관리 정책 부적절하게 설정됨 (${config_details})"
+        inspection_summary="mật khẩu 관리 정책 부적절하게 cấu hình됨 (${config_details})"
     fi
 
     # 명령어 실행 결과 결합 (raw output)
@@ -236,13 +236,13 @@ diagnose() {
     command_executed="grep -E 'pam_pwquality.so|pam_cracklib.so' /etc/pam.d/common-password /etc/pam.d/common-auth; grep -E '^PASS_(MAX|MIN)_DAYS' /etc/login.defs"
 
     #echo ""
-    #echo "진단 결과: ${status}"
+    #echo "Kết quả kiểm tra: ${status}"
     #echo "판정: ${diagnosis_result}"
     #echo "설명: ${inspection_summary}"
     #echo ""
 
-    # 결과 생성 (PC 패턴: 스크립트에서 모드 확인 후 처리)
-    # Run-all 모드 확인
+    # 결과 생성 (PC 패턴: 스크립트에서 모드 kiểm tra 후 처리)
+    # Run-all 모드 kiểm tra
     save_dual_result \
         "${ITEM_ID}" \
         "${ITEM_NAME}" \
@@ -257,7 +257,7 @@ diagnose() {
         "${GUIDELINE_CRITERIA_BAD}" \
         "${GUIDELINE_REMEDIATION}"
 
-    # 결과 저장 확인
+    # 결과 저장 kiểm tra
     verify_result_saved "${ITEM_ID}"
 
 
@@ -272,7 +272,7 @@ main() {
     # 진단 시작 표시
     show_diagnosis_start "${ITEM_ID}" "${ITEM_NAME}"
 
-    # 디스크 공간 확인
+    # 디스크 공간 kiểm tra
     check_disk_space
 
     # 진단 수행
