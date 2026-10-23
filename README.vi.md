@@ -46,7 +46,7 @@ Script có thể xuất JSON/TXT, thường lưu trong thư mục `results/YYYYM
 - [x] Việt hóa bước đầu RedHat `U01_check.sh`.
 - [ ] Kiểm thử chức năng và rà soát câu chữ của U-01.
 - [ ] Việt hóa các thư viện dùng chung.
-- [ ] Việt hóa những script còn lại theo từng nền tảng.
+- [ ] Việt hóa các script còn lại theo từng nền tảng; đã cập nhật thuật ngữ bước đầu cho RedHat U-01…U-05 và Debian U-01…U-05 (10 script, chưa hoàn tất bản dịch từng script).
 - [ ] Regression test toàn bộ.
 
 ## Giấy phép
