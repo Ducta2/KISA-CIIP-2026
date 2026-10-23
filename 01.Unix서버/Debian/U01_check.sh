@@ -5,19 +5,19 @@
 # @Version: 1.0.1
 # @Last Updated: 2026-01-16
 # ============================================================================
-# [점검 항목 상세]
+# [Chi tiết hạng mục kiểm tra]
 # @ID          : U-01
 # @Category    : Unix Server
 # @Platform    : Debian
 # @Severity    : 상
-# @Title       : root 계정 원격 접속 제한
-# @Description : PermitRootLogin no 설정 확인
-# @Reference   : 2026 KISA 주요정보통신기반시설 기술적 취약점 분석·평가 상세 가이드
+# @Title       : Hạn chế đăng nhập từ xa bằng tài khoản root
+# @Description : PermitRootLogin no cấu hình kiểm tra
+# @Reference   : 2026 KISA 주요정보통신기반시설 기술적 điểm yếu bảo mật 분석·평가 상세 가이드
 # ==============================================================================
 
 set -euo pipefail
 
-# 스크립트 디렉토리 설정
+# 스크립트 디렉토리 cấu hình
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LIB_DIR="${SCRIPT_DIR}/../../lib"
 
@@ -31,15 +31,15 @@ source "${LIB_DIR}/metadata_parser.sh"
 
 
 ITEM_ID="U-01"
-ITEM_NAME="root 계정 원격 접속 제한"
+ITEM_NAME="Hạn chế đăng nhập từ xa bằng tài khoản root"
 SEVERITY="상"
 
 # 가이드라인 정보
-GUIDELINE_PURPOSE="관리자 계정 탈취로 인한 시스템 장악을 방지하기 위해 외부 비인가자의 root 계정 접근 시도를 원천적으로 차단하기 위함"
-GUIDELINE_THREAT="root 계정은 운영 체제의 모든 기능을 설정 및 변경이 가능하여(프로세스, 커널 변경 등) root 계정을 탈취하여 외부에서 원격을 이용한 시스템 장악 및 각종 공격으로(무차별 대입 공격, 사전 대입 공격 등) 인한 root 계정 사용 불가 위험이 존재함"
+GUIDELINE_PURPOSE="quản trị viên 계정 탈취로 인한 시스템 장악을 방지하기 위해 외부 비인가자의 root 계정 접근 시도를 원천적으로 차단하기 위함"
+GUIDELINE_THREAT="root 계정은 운영 체제의 모든 기능을 cấu hình 및 변경이 가능하여(프로세스, 커널 변경 등) root 계정을 탈취하여 외부에서 원격을 이용한 시스템 장악 및 각종 공격으로(무차별 대입 공격, 사전 대입 공격 등) 인한 root 계정 사용 불가 위험이 존재함"
 GUIDELINE_CRITERIA_GOOD="원격 터미널 서비스를 사용하지 않거나, 사용 시 root 직접 접속을 차단한 경우"
 GUIDELINE_CRITERIA_BAD="원격 터미널 서비스 사용 시 root 직접 접속을 허용한 경우"
-GUIDELINE_REMEDIATION="원격 접속 시 root 계정으로 접속할 수 없도록 파일 내용 설정"
+GUIDELINE_REMEDIATION="truy cập từ xa 시 root 계정으로 접속할 수 없도록 파일 내용 cấu hình"
 
 # ============================================================================
 # 진단 함수
@@ -55,15 +55,15 @@ diagnose() {
     local command_executed=""
 
     # ==========================================================================
-    # 서비스 실행 상태 확인
-    # 가이드라인 기준: "원격터미널서비스를 사용하지 않거나" → 서비스 미실행 시 양호(GOOD)
+    # 서비스 실행 상태 kiểm tra
+    # 가이드라인 tiêu chí: "원격터미널서비스를 사용하지 않거나" → 서비스 미실행 시 양호(GOOD)
     # ==========================================================================
     local ssh_active=false    # SSH 서비스 실행 상태 (true/false)
     local telnet_active=false # Telnet 서비스 실행 상태 (true/false)
-    local ssh_service_output="" # SSH 서비스 확인 결과
-    local telnet_service_output="" # Telnet 서비스 확인 결과
+    local ssh_service_output="" # SSH 서비스 kiểm tra 결과
+    local telnet_service_output="" # Telnet 서비스 kiểm tra 결과
 
-    # SSH 서비스 실행 확인 (systemctl 또는 service 명령어 사용)
+    # SSH 서비스 실행 kiểm tra (systemctl 또는 service 명령어 사용)
     local ssh_checked=false
     local newline=$'\n'
 
@@ -87,7 +87,7 @@ diagnose() {
         fi
     fi
 
-    # 3. 프로세스 확인 (최후의 수단)
+    # 3. 프로세스 kiểm tra (최후의 수단)
     if [ "$ssh_checked" = false ]; then
         local ssh_ps_output=$(ps aux 2>/dev/null | grep -E "sshd.*-D|sshd$" | grep -v grep || echo "")
         if [ -n "$ssh_ps_output" ]; then
@@ -96,7 +96,7 @@ diagnose() {
         fi
     fi
 
-    # Telnet 서비스 실행 확인 (telnetd, inetd, xinetd)
+    # Telnet 서비스 실행 kiểm tra (telnetd, inetd, xinetd)
     local telnet_checked=false
 
     # 1. systemctl 시도 (systemd 환경)
@@ -145,7 +145,7 @@ diagnose() {
         fi
     fi
 
-    # 3. 프로세스 및 포트 확인 (최후의 수단)
+    # 3. 프로세스 및 포트 kiểm tra (최후의 수단)
     if [ "$telnet_checked" = false ]; then
         local telnet_ps_output=$(ps aux 2>/dev/null | grep -E "in\.telnetd|telnetd" | grep -v grep || echo "")
         local telnet_port_output=$(netstat -tlnp 2>/dev/null | grep ":23 " || ss -tlnp 2>/dev/null | grep ":23 " || echo "")
@@ -161,7 +161,7 @@ diagnose() {
     if [ "$ssh_active" = false ] && [ "$telnet_active" = false ]; then
         diagnosis_result="GOOD"
         status="양호"
-        inspection_summary="SSH/Telnet 서비스 미사용으로 root 원격 접속 불가"
+        inspection_summary="SSH/Telnet 서비스 미사용으로 root truy cập từ xa 불가"
 
         command_result="[SSH Service Status]${newline}$(systemctl status ssh 2>&1 | head -3 || service ssh status 2>&1 | head -3)${newline}${newline}[Telnet Service Status]${newline}$(systemctl status telnetd 2>&1 | head -3 || service telnetd status 2>&1 | head -3 || echo 'Telnet service not found')"
         command_executed="service ssh status; service telnetd/inetd/xinetd status"
@@ -181,28 +181,28 @@ diagnose() {
     if [ "$ssh_active" = true ]; then
         local sshd_config_file="/etc/ssh/sshd_config"
 
-        # SSH 설정 파일 존재 확인
+        # SSH cấu hình 파일 존재 kiểm tra
         if [ ! -f "$sshd_config_file" ]; then
             diagnosis_result="MANUAL"
             status="수동진단"
-            inspection_summary="SSH 설정 파일 없음 (${sshd_config_file})"
+            inspection_summary="SSH cấu hình 파일 없음 (${sshd_config_file})"
 
             ssh_config_output="파일 없음"
             ssh_secure=false
         else
-            # PermitRootLogin 설정 확인 (주석 포함)
+            # PermitRootLogin cấu hình kiểm tra (주석 포함)
             local ssh_config_commented=$(grep -E "^[\s]*#*[\s]*PermitRootLogin" "$sshd_config_file" 2>/dev/null | head -1 || true)
             ssh_config_output=$(grep -E "^[\s]*PermitRootLogin" "$sshd_config_file" 2>/dev/null | grep -v "^#" | head -1 || true)
             local permit_root_setting=$(echo "$ssh_config_output" | awk '{print $2}')
 
             if [ -z "$permit_root_setting" ]; then
-                config_details="[SSH] PermitRootLogin 설정 없음 (기본값: yes)"
+                config_details="[SSH] PermitRootLogin cấu hình 없음 (기본값: yes)"
                 ssh_secure=false
-                # 주석으로 된 설정이 있으면 보여주기
+                # 주석으로 된 cấu hình이 있으면 보여주기
                 if [ -n "$ssh_config_commented" ]; then
                     ssh_config_output="${ssh_config_commented} (주석 처리됨)"
                 else
-                    ssh_config_output="설정 없음 (기본값 yes 사용)"
+                    ssh_config_output="cấu hình 없음 (기본값 yes 사용)"
                 fi
             else
                 config_details="[SSH] PermitRootLogin ${permit_root_setting}"
@@ -214,7 +214,7 @@ diagnose() {
                         ssh_secure=false
                         ;;
                     *)
-                        config_details="${config_details} (알 수 없는 설정)"
+                        config_details="${config_details} (알 수 없는 cấu hình)"
                         ssh_secure=false
                         ;;
                 esac
@@ -241,10 +241,10 @@ diagnose() {
             securetty_output=$(grep -E "^[\s]*pts" "$securetty_file" 2>/dev/null || echo "")
             if [ -n "$securetty_output" ]; then
                 telnet_secure=false
-                telnet_details="[Telnet] /etc/securetty에 pts 설정 존재 (취약)"
+                telnet_details="[Telnet] /etc/securetty에 pts cấu hình 존재 (취약)"
             else
                 telnet_secure=true
-                telnet_details="[Telnet] /etc/securetty에 pts 설정 없음 (양호)"
+                telnet_details="[Telnet] /etc/securetty에 pts cấu hình 없음 (양호)"
             fi
         else
             # CentOS 8+, Ubuntu 20.04+: securetty 파일이 존재하지 않는 경우
@@ -260,12 +260,12 @@ diagnose() {
         if [ -f "$pam_login_file" ]; then
             pam_login_output=$(grep -E "^[\s]*auth.*required.*pam_securetty.so" "$pam_login_file" 2>/dev/null || echo "")
             if [ -n "$pam_login_output" ]; then
-                # pam_securetty.so가 설정되어 있으면 /etc/securetty가 있어야 함
-                telnet_details="${telnet_details}, [PAM] pam_securetty.so 설정됨"
+                # pam_securetty.so가 cấu hình되어 있으면 /etc/securetty가 있어야 함
+                telnet_details="${telnet_details}, [PAM] pam_securetty.so cấu hình됨"
             else
                 # securetty 파일이 있지만 모듈이 없으면 securetty가 무시됨
                 telnet_secure=false
-                telnet_details="${telnet_details}, [PAM] pam_securetty.so 설정 없음 (취약)"
+                telnet_details="${telnet_details}, [PAM] pam_securetty.so cấu hình 없음 (취약)"
             fi
         else
             telnet_details="${telnet_details}, [PAM] /etc/pam.d/login 파일 없음"
@@ -318,11 +318,11 @@ diagnose() {
     if [ "$is_secure" = true ]; then
         diagnosis_result="GOOD"
         status="양호"
-        inspection_summary="root 계정 원격 접속 제한 적절 (${config_details})"
+        inspection_summary="Hạn chế đăng nhập từ xa bằng tài khoản root 적절 (${config_details})"
     else
         diagnosis_result="VULNERABLE"
         status="취약"
-        inspection_summary="root 계정 원격 접속 제한 미설정 또는 부적절 (${config_details})"
+        inspection_summary="Hạn chế đăng nhập từ xa bằng tài khoản root 미cấu hình 또는 부적절 (${config_details})"
     fi
     fi
 
@@ -341,7 +341,7 @@ diagnose() {
         "${GUIDELINE_CRITERIA_BAD}" \
         "${GUIDELINE_REMEDIATION}"
 
-    # 결과 저장 확인
+    # 결과 저장 kiểm tra
     verify_result_saved "${ITEM_ID}"
 
     return 0
@@ -355,7 +355,7 @@ main() {
     # 진단 시작 표시
     show_diagnosis_start "${ITEM_ID}" "${ITEM_NAME}"
 
-    # 디스크 공간 확인
+    # 디스크 공간 kiểm tra
     check_disk_space
 
     # 진단 수행

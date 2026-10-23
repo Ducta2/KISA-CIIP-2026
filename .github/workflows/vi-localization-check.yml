@@ -1,0 +1,30 @@
+name: Vietnamese localization static checks
+on:
+  pull_request:
+    paths:
+      - '**/*.sh'
+      - '**/*.ps1'
+      - 'tools/check_vi_integrity.py'
+      - '.github/workflows/vi-localization-check.yml'
+  workflow_dispatch:
+jobs:
+  bash-syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check Bash syntax for all shell scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          fail=0
+          while IFS= read -r -d '' file; do
+            if ! bash -n "$file"; then
+              echo "FAIL: $file"
+              fail=1
+            fi
+          done < <(find . -type f -name '*.sh' -print0)
+          exit "$fail"
+      - name: Check changes outside comments
+        run: python3 tools/check_vi_integrity.py --base origin/master

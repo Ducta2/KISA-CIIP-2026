@@ -1,7 +1,7 @@
 #!/bin/bash
-# KISA 취약점 진단 시스템 - 출력 모드 관리
+# KISA Không đạt점 진단 시스템 - 출력 모드 관리
 # Encoding: UTF-8 (BOM 없음), LF
-# Purpose: JSON과 텍스트 이중 출력 모드 관리
+# Purpose: JSON과 텍스트 Chế độ xuất kép 관리
 
 set -euo pipefail
 
@@ -15,7 +15,7 @@ set_output_mode() {
         dual|json|text)
             ;;
         *)
-            echo "❌ 잘못된 출력 모드: $OUTPUT_MODE (dual|json|text)" >&2
+            echo "❌ Chế độ xuất không hợp lệ: $OUTPUT_MODE (dual|json|text)" >&2
             exit 1
             ;;
     esac
@@ -23,7 +23,7 @@ set_output_mode() {
 
 # 이중 출력 (JSON + 텍스트)
 output_dual() {
-    echo "🔄 이중 출력 모드: JSON + 텍스트"
+    echo "🔄 Chế độ xuất kép: JSON + 텍스트"
 
     # JSON 출력
     if type -t create_json_result &>/dev/null; then
@@ -38,12 +38,12 @@ output_dual() {
 
 # JSON 전용 출력
 output_json() {
-    echo "🔄 JSON 출력 모드"
+    echo "🔄 Chế độ xuất JSON"
 
     if type -t create_json_result &>/dev/null; then
         create_json_result "$@"
     else
-        echo "❌ create_json_result 함수 미정의" >&2
+        echo "❌ create_json_result hàm chưa được định nghĩa" >&2
         exit 1
     fi
 }
@@ -55,7 +55,7 @@ output_text() {
     if type -t create_text_result &>/dev/null; then
         create_text_result "$@"
     else
-        echo "❌ create_text_result 함수 미정의" >&2
+        echo "❌ create_text_result hàm chưa được định nghĩa" >&2
         exit 1
     fi
 }

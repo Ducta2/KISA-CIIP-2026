@@ -1,5 +1,5 @@
 #!/bin/bash
-# KISA 취약점 진단 시스템 - 결과 관리자
+# KISA Không đạt점 진단 시스템 - 결과 관리자
 # Encoding: UTF-8 (BOM 없음), LF
 # Purpose: 진단 결과 파일 생성, 저장, 관리 (T025-T029)
 
@@ -108,7 +108,7 @@ create_result_file_path() {
 save_json_result() {
     local item_id="$1"
     local item_name="$2"
-    local status="$3"           # 양호, 취약, 수동진단, N/A
+    local status="$3"           # Đạt, Không đạt, Kiểm tra thủ công, N/A
     local final_result="$4"      # GOOD, VULNERABLE, MANUAL, N/A
     local inspection_summary="$5"
     local command_result="$6"
@@ -148,7 +148,7 @@ save_json_result() {
     # JSON 유효성 검증 (jq가 있을 경우)
     if command -v jq &>/dev/null; then
         if ! jq empty "${result_path}.json" &>/dev/null; then
-            echo "❌ 치명적 오류: JSON 유효성 검증 실패" >&2
+            echo "❌ Lỗi nghiêm trọng: Kiểm tra tính hợp lệ JSON thất bại" >&2
             echo "파일: ${result_path}.json" >&2
             return 1
         fi
@@ -189,8 +189,8 @@ save_text_result() {
 
 ${inspection_summary}
 
-[현황]
-1) 진단 확인
+[Hiện trạng]
+1) Kiểm tra đánh giá
 command: ${command_executed}
 command_result:
 ${command_result}
@@ -199,12 +199,12 @@ ${command_result}
 
 [${item_id}]Result : ${final_result}
 
-[참고]
-진단 목적: ${guideline_purpose}
-보안 위협: ${guideline_threat}
-양호 기준: ${guideline_criteria_good}
-취약 기준: ${guideline_criteria_bad}
-조치 방법: ${guideline_remediation}
+[Tham khảo]
+Mục đích đánh giá: ${guideline_purpose}
+Rủi ro bảo mật: ${guideline_threat}
+Đạt 기준: ${guideline_criteria_good}
+Không đạt 기준: ${guideline_criteria_bad}
+Biện pháp khắc phục: ${guideline_remediation}
 
 ============================================================
 EOF
@@ -247,12 +247,12 @@ verify_result_saved() {
 
     # 개별 실행 모드: 파일 존재 확인
     if [ ! -f "${result_path}.json" ] || [ ! -f "${result_path}.txt" ]; then
-        echo "❌ 치명적 오류: 결과 파일 생성 실패" >&2
-        echo "예상 경로: ${result_path}" >&2
+        echo "❌ Lỗi nghiêm trọng: Không tạo được tệp kết quả" >&2
+        echo "Đường dẫn dự kiến: ${result_path}" >&2
         exit 1
     fi
     echo ""
-    echo "결과 파일 저장 확인: ${result_path}.{json,txt}"
+    echo "Đã xác nhận tệp kết quả được lưu: ${result_path}.{json,txt}"
     echo ""
 
 }
@@ -341,9 +341,9 @@ generate_result_statistics() {
 
     echo "총 JSON 결과: ${total_json}"
     echo "총 텍스트 결과: ${total_txt}"
-    echo "양호 (GOOD): ${good_count}"
-    echo "취약 (VULNERABLE): ${vulnerable_count}"
-    echo "수동진단 (MANUAL): ${manual_count}"
+    echo "Đạt (GOOD): ${good_count}"
+    echo "Không đạt (VULNERABLE): ${vulnerable_count}"
+    echo "Kiểm tra thủ công (MANUAL): ${manual_count}"
     echo ""
 }
 
@@ -396,7 +396,7 @@ Last Updated: 2026-01-16
 ==============================================================================
 
 =================================================================
-KISA 취약점 진단 시스템 - 전체 항목 진단 결과
+KISA Không đạt점 진단 시스템 - 전체 항목 진단 결과
 =================================================================
 
 카테고리: ${category}
@@ -452,8 +452,8 @@ append_runall_text_result() {
 
 ${summary}
 
-[현황]
-1) 진단 확인
+[Hiện trạng]
+1) Kiểm tra đánh giá
 command: ${command}
 command_result:
 ${command_result}
@@ -462,12 +462,12 @@ ${command_result}
 
 [${item_id}]Result : ${final_result}
 
-[참고]
-진단 목적: ${guideline_purpose}
-보안 위협: ${guideline_threat}
-양호 기준: ${guideline_criteria_good}
-취약 기준: ${guideline_criteria_bad}
-조치 방법: ${guideline_remediation}
+[Tham khảo]
+Mục đích đánh giá: ${guideline_purpose}
+Rủi ro bảo mật: ${guideline_threat}
+Đạt 기준: ${guideline_criteria_good}
+Không đạt 기준: ${guideline_criteria_bad}
+Biện pháp khắc phục: ${guideline_remediation}
 
 ============================================================
 EOF
@@ -508,9 +508,9 @@ create_runall_aggregated_results() {
     # 나머지는 results_json
 
     # 실제로는 RESULTS_JSON의 각 항목에서 final_result를 확인하여 분류
-    local good_items_array=()  # 양호 (GOOD)
-    local vuln_items_array=()  # 취약 (VULNERABLE)
-    local manual_items_array=() # 수동진단 (MANUAL)
+    local good_items_array=()  # Đạt (GOOD)
+    local vuln_items_array=()  # Không đạt (VULNERABLE)
+    local manual_items_array=() # Kiểm tra thủ công (MANUAL)
     local error_items_array=()  # 진단 실패/N/A
 
     for json_obj in "${all_args[@]}"; do
@@ -561,19 +561,19 @@ create_runall_aggregated_results() {
         cat >> "${TXT_FILE}" << EOF
 
 총 항목: ${total_items}
-양호: ${good_count}
-취약: ${vuln_count}
+Đạt: ${good_count}
+Không đạt: ${vuln_count}
 N/A: ${error_count}
 수동: ${manual_count}
-양호율: ${good_rate}%
+Đạt율: ${good_rate}%
 
 -----------------------------------------------------------------
-양호 항목 (${good_count}개)
+Đạt 항목 (${good_count}개)
 -----------------------------------------------------------------
 $(printf '%s\n' "${good_items_array[@]}")
 
 -----------------------------------------------------------------
-취약 항목 (${vuln_count}개)
+Không đạt 항목 (${vuln_count}개)
 -----------------------------------------------------------------
 $(printf '%s\n' "${vuln_items_array[@]}")
 

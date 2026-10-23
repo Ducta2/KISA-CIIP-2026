@@ -5,19 +5,19 @@
 # @Version: 1.0.1
 # @Last Updated: 2026-01-18
 # ============================================================================
-# [점검 항목 상세]
+# [Chi tiết hạng mục kiểm tra]
 # @ID          : U-05
 # @Category    : Unix Server
 # @Platform    : Debian
 # @Severity    : 상
-# @Title       : root 이외의 UID가 '0' 금지
-# @Description : UID 0인 계정이 root만 있는지 확인
-# @Reference   : 2026 KISA 주요정보통신기반시설 기술적 취약점 분석·평가 상세 가이드
+# @Title       : Ngăn tài khoản ngoài root sử dụng UID 0
+# @Description : UID 0인 계정이 root만 있는지 kiểm tra
+# @Reference   : 2026 KISA 주요정보통신기반시설 기술적 điểm yếu bảo mật 분석·평가 상세 가이드
 # ==============================================================================
 
 set -euo pipefail
 
-# 스크립트 디렉토리 설정
+# 스크립트 디렉토리 cấu hình
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LIB_DIR="${SCRIPT_DIR}/../../lib"
 
@@ -30,15 +30,15 @@ source "${LIB_DIR}/output_mode.sh"
 source "${LIB_DIR}/metadata_parser.sh"
 
 ITEM_ID="U-05"
-ITEM_NAME="root 이외의 UID가 '0' 금지"
+ITEM_NAME="Ngăn tài khoản ngoài root sử dụng UID 0"
 SEVERITY="상"
 
 # 가이드라인 정보
-GUIDELINE_PURPOSE="root 계정과 동일한 UID가 존재하는지 점검하여 root 권한이 일반 사용자 계정이나 비인가자의 접근 위협에 안전하게 보호되고 있는지 확인하기 위함"
-GUIDELINE_THREAT="root 계정과 동일한 UID가 설정되어 있는 일반 사용자 계정도 root 권한을 부여받아 관리자가 실행할 수 있는 모든 작업이 가능한 위험이 존재함(서비스 시작, 중지, 재부팅, root 권한 파일 편집 등) root 계정과 동일한 UID를 사용하므로 사용자 감사 추적 시 어려움 발생 위험이 존재함"
+GUIDELINE_PURPOSE="root 계정과 동일한 UID가 존재하는지 점검하여 root 권한이 일반 사용자 계정이나 비인가자의 접근 위협에 안전하게 보호되고 있는지 kiểm tra하기 위함"
+GUIDELINE_THREAT="root 계정과 동일한 UID가 cấu hình되어 있는 일반 사용자 계정도 root 권한을 부여받아 quản trị viên가 실행할 수 있는 모든 작업이 가능한 위험이 존재함(서비스 시작, 중지, 재부팅, root 권한 파일 편집 등) root 계정과 동일한 UID를 사용하므로 사용자 감사 추적 시 어려움 발생 위험이 존재함"
 GUIDELINE_CRITERIA_GOOD="root 계정과 동일한 UID를 갖는 계정이 존재하지 않는 경우"
 GUIDELINE_CRITERIA_BAD="root 계정과 동일한 UID를 갖는 계정이 존재하는 경우"
-GUIDELINE_REMEDIATION="UID가 0으로 설정된 계정을 0 이외의 중복되지 않은 UID로 변경 또는 불필요한 계정인 경우 제거하도록 설정 (사용 중인 계정인 경우 명령어를 통한 조치가 적용되지 않을 수 있으므로 /etc/passwd 파일을 통해 변경)"
+GUIDELINE_REMEDIATION="UID가 0으로 cấu hình된 계정을 0 이외의 중복되지 않은 UID로 변경 또는 불필요한 계정인 경우 제거하도록 cấu hình (사용 중인 계정인 경우 명령어를 통한 조치가 적용되지 않을 수 있으므로 /etc/passwd 파일을 통해 변경)"
 
 # ============================================================================
 # 진단 함수
@@ -53,7 +53,7 @@ diagnose() {
     local newline=$'\n'
 
     # 진단 로직 구현
-    # UID 0인 계정이 root만 있는지 확인 (Debian /etc/passwd)
+    # UID 0인 계정이 root만 있는지 kiểm tra (Debian /etc/passwd)
     
     local uid_zero_accounts=""
     local non_root_uid_zero=false
@@ -97,7 +97,7 @@ diagnose() {
     fi
 
     # 크로스 플랫폼 참고
-    # ※ AIX, HP-UX, Solaris: 모두 /etc/passwd 파일 확인 동일
+    # ※ AIX, HP-UX, Solaris: 모두 /etc/passwd 파일 kiểm tra 동일
 
     # 결과 저장
     save_dual_result \
