@@ -9,10 +9,10 @@
 # @ID          : U-01
 # @Category    : UNIX > 1. 계정 관리
 # @Platform    : SOLARIS, LINUX, AIX, HP-UX 등
-# @Severity    : (상)
-# @Title       : root 계정 원격 접속 제한
-# @Description : 원격 터미널을 이용한 root 계정의 직접 접속 제한 여부 점검
-# @Reference   : 2026 KISA 주요정보통신기반시설 기술적 취약점 분석·평가 상세 가이드
+# @Severity    : (Cao)
+# @Title       : Hạn chế đăng nhập từ xa bằng tài khoản root
+# @Description : Kiểm tra việc ngăn đăng nhập trực tiếp bằng root qua kết nối từ xa
+# @Reference   : 2026 KISA 주요정보통신기반시설 기술적 KHÔNG ĐẠT점 분석·평가 상세 가이드
 # ==============================================================================
 
 set -euo pipefail
@@ -28,27 +28,27 @@ source "${LIB_DIR}/output_mode.sh"
 source "${LIB_DIR}/metadata_parser.sh"
 
 ITEM_ID="U-01"
-ITEM_NAME="root 계정 원격 접속 제한"
-SEVERITY="(상)"
+ITEM_NAME="Hạn chế đăng nhập từ xa bằng tài khoản root"
+SEVERITY="(Cao)"
 
 # 가이드라인 정보
-GUIDELINE_PURPOSE="관리자 계정 탈취로 인한 시스템 장악을 방지하기 위해 외부 비인가자의 root 계정 접근 시도를 원천적으로 차단하기 위함"
-GUIDELINE_THREAT="root 계정은 운영 체제의 모든 기능을 설정 및 변경이 가능하여(프로세스, 커널 변경 등) root 계정을 탈취하여 외부에서 원격을 이용한 시스템 장악 및 각종 공격으로(무차별 대입 공격, 사전 대입 공격 등) 인한 root 계정 사용 불가 위험이 존재함"
-GUIDELINE_CRITERIA_GOOD="원격 터미널 서비스를 사용하지 않거나, 사용 시 root 직접 접속을 차단한 경우"
-GUIDELINE_CRITERIA_BAD="원격 터미널 서비스 사용 시 root 직접 접속을 허용한 경우"
-GUIDELINE_REMEDIATION="원격 접속 시 root 계정으로 접속할 수 없도록 파일 내용 설정"
+GUIDELINE_PURPOSE="Ngăn truy cập trực tiếp trái phép bằng root từ xa, giảm nguy cơ chiếm quyền quản trị hệ thống"
+GUIDELINE_THREAT="Tài khoản root có toàn quyền trên hệ thống. Cho phép đăng nhập trực tiếp từ xa làm tăng nguy cơ dò mật khẩu, chiếm quyền và thay đổi cấu hình"
+GUIDELINE_CRITERIA_GOOD="Không sử dụng dịch vụ truy cập từ xa hoặc đã chặn đăng nhập trực tiếp bằng root"
+GUIDELINE_CRITERIA_BAD="Dịch vụ truy cập từ xa cho phép đăng nhập trực tiếp bằng root"
+GUIDELINE_REMEDIATION="Cấu hình dịch vụ truy cập từ xa để không cho phép đăng nhập trực tiếp bằng root"
 
 diagnose() {
-    local status="양호"
+    local status="ĐẠT"
     diagnosis_result="GOOD"
-    local inspection_summary="root 계정 원격 접속 제한 설정이 적절합니다."
+    local inspection_summary="Hạn chế đăng nhập từ xa bằng tài khoản root được cấu hình phù hợp."
     local command_result=""
     local command_executed="systemctl is-active sshd; grep -i 'PermitRootLogin' /etc/ssh/sshd_config"
 
     local newline=$'\n'
 
     # ==========================================================================
-    # 1. 서비스 실행 상태 확인
+    # 1. Kiểm tra trạng thái dịch vụ
     # ==========================================================================
     local ssh_active=false
     local telnet_active=false
@@ -68,10 +68,10 @@ diagnose() {
     fi
 
     # ==========================================================================
-    # 2. 서비스 미사용 시 양호 판정
+    # 2. 서비스 미사용 시 ĐẠT 판정
     # ==========================================================================
     if [ "$ssh_active" = false ] && [ "$telnet_active" = false ]; then
-        command_result="[SSH] 서비스 미실행${newline}[Telnet] 서비스 미실행"
+        command_result="[SSH] dịch vụ không chạy${newline}[Telnet] dịch vụ không chạy"
         save_dual_result \
             "${ITEM_ID}" "${ITEM_NAME}" "${status}" "${diagnosis_result}" \
             "${inspection_summary}" "${command_result}" "${command_executed}" \
@@ -82,7 +82,7 @@ diagnose() {
     fi
 
     # ==========================================================================
-    # 3. 서비스 실행 중인 경우 상세 진단
+    # 3. Kiểm tra chi tiết khi dịch vụ đang chạy
     # ==========================================================================
     local ssh_secure=true
     local telnet_secure=true
@@ -96,28 +96,28 @@ diagnose() {
             if [ -z "$ssh_val" ]; then
                 # 설정 라인이 없으면 주석이나 미설정 → 기본값 확인 필요
                 ssh_secure=false
-                details="${details}[SSH] PermitRootLogin 미설정 (기본값). "
+                details="${details}[SSH] PermitRootLogin chưa cấu hình (giá trị mặc định). "
             else
                 case "$ssh_val" in
                     no|prohibit-password|without-password)
-                        details="${details}[SSH] PermitRootLogin=${ssh_val} (양호). "
+                        details="${details}[SSH] PermitRootLogin=${ssh_val} (ĐẠT). "
                         ;;
                     yes)
                         ssh_secure=false
-                        details="${details}[SSH] PermitRootLogin=yes (취약). "
+                        details="${details}[SSH] PermitRootLogin=yes (KHÔNG ĐẠT). "
                         ;;
                     *)
                         ssh_secure=false
-                        details="${details}[SSH] PermitRootLogin=${ssh_val} (확인필요). "
+                        details="${details}[SSH] PermitRootLogin=${ssh_val} (cần kiểm tra). "
                         ;;
                 esac
             fi
         else
             # sshd_config 파일 자체가 없음 → MANUAL 처리
             diagnosis_result="MANUAL"
-            status="수동진단"
-            inspection_summary="SSH 설정 파일(${sshd_config})이 없습니다."
-            command_result="[SSH] 설정 파일 없음"
+            status="KIỂM TRA THỦ CÔNG"
+            inspection_summary="SSH tệp cấu hình(${sshd_config})이 없습니다."
+            command_result="[SSH] tệp cấu hình 없음"
             save_dual_result \
                 "${ITEM_ID}" "${ITEM_NAME}" "${status}" "${diagnosis_result}" \
                 "${inspection_summary}" "${command_result}" "${command_executed}" \
@@ -133,23 +133,23 @@ diagnose() {
         local securetty_pts=$(grep -E "^pts/" /etc/securetty 2>/dev/null || true)
         if [ -n "$securetty_pts" ]; then
             telnet_secure=false
-            details="${details}[Telnet] /etc/securetty에 pts 설정 존재 (취약). "
+            details="${details}[Telnet] /etc/securetty에 pts có cấu hình (KHÔNG ĐẠT). "
         else
-            details="${details}[Telnet] /etc/securetty에 pts 설정 없음 (양호). "
+            details="${details}[Telnet] /etc/securetty에 pts không có cấu hình (ĐẠT). "
         fi
     fi
 
     # ==========================================================================
-    # 4. 종합 판정
+    # 4. Đánh giá tổng hợp
     # ==========================================================================
     if [ "$ssh_secure" = true ] && [ "$telnet_secure" = true ]; then
-        status="양호"
+        status="ĐẠT"
         diagnosis_result="GOOD"
-        inspection_summary="root 계정 원격 접속 제한 적절 (${details})"
+        inspection_summary="Hạn chế đăng nhập từ xa bằng tài khoản root 적절 (${details})"
     else
-        status="취약"
+        status="KHÔNG ĐẠT"
         diagnosis_result="VULNERABLE"
-        inspection_summary="root 계정 원격 접속 제한 미설정 또는 부적절 (${details})"
+        inspection_summary="Hạn chế đăng nhập từ xa bằng tài khoản root chưa cấu hình hoặc cấu hình không phù hợp (${details})"
     fi
 
     command_result="${details}"
@@ -166,7 +166,7 @@ diagnose() {
 
 main() {
     show_diagnosis_start "${ITEM_ID}" "${ITEM_NAME}"
-    [ "$EUID" -ne 0 ] && { echo "root 권한이 필요합니다."; exit 1; }
+    [ "$EUID" -ne 0 ] && { echo "Yêu cầu quyền root."; exit 1; }
     diagnose
     show_diagnosis_complete "${ITEM_ID}" "${diagnosis_result}"
     exit 0
