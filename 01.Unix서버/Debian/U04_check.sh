@@ -5,19 +5,19 @@
 # @Version: 1.0.1
 # @Last Updated: 2026-01-18
 # ============================================================================
-# [점검 항목 상세]
+# [Chi tiết hạng mục kiểm tra]
 # @ID          : U-04
 # @Category    : Unix Server
 # @Platform    : Debian
 # @Severity    : 상
-# @Title       : 패스워드 파일 보호
-# @Description : /etc/passwd 비밀번호 필드가 'x'인지 확인 (쉐도우 비밀번호)
-# @Reference   : 2026 KISA 주요정보통신기반시설 기술적 취약점 분석·평가 상세 가이드
+# @Title       : Bảo vệ tệp mật khẩu
+# @Description : /etc/passwd mật khẩu 필드가 'x'인지 kiểm tra (쉐도우 mật khẩu)
+# @Reference   : 2026 KISA 주요정보통신기반시설 기술적 điểm yếu bảo mật 분석·평가 상세 가이드
 # ==============================================================================
 
 set -euo pipefail
 
-# 스크립트 디렉토리 설정
+# 스크립트 디렉토리 cấu hình
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LIB_DIR="${SCRIPT_DIR}/../../lib"
 
@@ -30,15 +30,15 @@ source "${LIB_DIR}/output_mode.sh"
 source "${LIB_DIR}/metadata_parser.sh"
 
 ITEM_ID="U-04"
-ITEM_NAME="패스워드 파일 보호"
+ITEM_NAME="Bảo vệ tệp mật khẩu"
 SEVERITY="상"
 
 # 가이드라인 정보 (Spaces added for readability)
-GUIDELINE_PURPOSE="일부 오래된 시스템의 경우 /etc/passwd 파일에 비밀번호가 평 문으로 저장되므로 사용자 계정 비밀번호가 암호화되어 저장되어 있는지 점검하여 비인가자의 비밀번호 파일 접근 시에도 사용자 계정 비밀번호가 안전하게 관리되고 있는지 확인하기 위함"
-GUIDELINE_THREAT="사용자 계정 비밀번호가 저장된 파일이 유출 또는 탈취 시 평 문으로 저장된 비밀번호 정보가 노출 위험이 존재함"
-GUIDELINE_CRITERIA_GOOD="쉐도우 비밀번호를 사용하거나, 비밀번호를 암호화하여 저장하는 경우"
-GUIDELINE_CRITERIA_BAD="쉐도우 비밀번호를 사용하지 않고, 비밀번호를 암호화하여 저장하지 않는 경우"
-GUIDELINE_REMEDIATION="비밀번호 암호화 저장· 관리 설정"
+GUIDELINE_PURPOSE="일부 오래된 시스템의 경우 /etc/passwd 파일에 mật khẩu가 평 문으로 저장되므로 사용자 계정 mật khẩu가 암호화되어 저장되어 있는지 점검하여 비인가자의 mật khẩu 파일 접근 시에도 사용자 계정 mật khẩu가 안전하게 관리되고 있는지 kiểm tra하기 위함"
+GUIDELINE_THREAT="사용자 계정 mật khẩu가 저장된 파일이 유출 또는 탈취 시 평 문으로 저장된 mật khẩu 정보가 노출 위험이 존재함"
+GUIDELINE_CRITERIA_GOOD="쉐도우 mật khẩu를 사용하거나, mật khẩu를 암호화하여 저장하는 경우"
+GUIDELINE_CRITERIA_BAD="쉐도우 mật khẩu를 사용하지 않고, mật khẩu를 암호화하여 저장하지 않는 경우"
+GUIDELINE_REMEDIATION="mật khẩu 암호화 저장· 관리 cấu hình"
 
 # ============================================================================
 # 진단 함수
@@ -53,7 +53,7 @@ diagnose() {
     local newline=$'\n'
 
     # 진단 로직 구현
-    # /etc/passwd 파일의 비밀번호 필드가 'x' 또는 '*'인지 확인
+    # /etc/passwd 파일의 mật khẩu 필드가 'x' 또는 '*'인지 kiểm tra
     
     local shadow_file="/etc/shadow"
     local passwd_file="/etc/passwd"
@@ -62,19 +62,19 @@ diagnose() {
     local non_shadow_users=""
     local total_users=0
 
-    # 1) /etc/shadow 파일 존재 확인
+    # 1) /etc/shadow 파일 존재 kiểm tra
     if [ -f "$shadow_file" ]; then
         shadow_exists=true
     fi
 
-    # 2) /etc/passwd 파일의 각 사용자 비밀번호 필드(두 번째 필드) 확인
+    # 2) /etc/passwd 파일의 각 사용자 mật khẩu 필드(두 번째 필드) kiểm tra
     while IFS=: read -r username password uid uid_number gid gecos home shell; do
         ((total_users++)) || true
         
-        # 비밀번호 필드가 'x' 또는 '*'가 아닌 경우 확인
+        # mật khẩu 필드가 'x' 또는 '*'가 아닌 경우 kiểm tra
         if [ -n "$password" ] && [ "$password" != "x" ] && [ "$password" != "*" ]; then
              all_users_shadow=false
-             # 보안상 전체 비밀번호가 아닌 필드 상태만 기록
+             # 보안상 전체 mật khẩu가 아닌 필드 상태만 기록
              non_shadow_users="${non_shadow_users}${username}(평문 또는 비암호화), "
         fi
     done < "$passwd_file"
@@ -88,7 +88,7 @@ diagnose() {
         ls_shadow_output="[FILE NOT FOUND: ${shadow_file}]"
     fi
 
-    # /etc/passwd 상위 5개 라인 (비밀번호 필드만 확인)
+    # /etc/passwd 상위 5개 라인 (mật khẩu 필드만 kiểm tra)
     local passwd_sample=$(awk -F: '{print $1 ":" $2 ":..."}' "$passwd_file" | head -5)
 
     command_result="${ls_shadow_output}${newline}${newline}[FILE: ${passwd_file} (Top 5 entries)]${newline}${passwd_sample}"
@@ -105,11 +105,11 @@ diagnose() {
     if [ "$shadow_exists" = true ] && [ "$all_users_shadow" = true ]; then
         diagnosis_result="GOOD"
         status="양호"
-        inspection_summary="쉐도우 비밀번호를 사용하고 있으며, /etc/passwd 상 비밀번호 필드가 보호되고 있음"
+        inspection_summary="쉐도우 mật khẩu를 사용하고 있으며, /etc/passwd 상 mật khẩu 필드가 보호되고 있음"
     else
         diagnosis_result="VULNERABLE"
         status="취약"
-        inspection_summary="쉐도우 비밀번호를 사용하지 않거나, /etc/passwd 파일에 평문 비밀번호가 존재함 (${non_shadow_users%, })"
+        inspection_summary="쉐도우 mật khẩu를 사용하지 않거나, /etc/passwd 파일에 평문 mật khẩu가 존재함 (${non_shadow_users%, })"
     fi
 
     # 결과 저장 (통합형 인자 사용)
@@ -127,7 +127,7 @@ diagnose() {
         "${GUIDELINE_CRITERIA_BAD}" \
         "${GUIDELINE_REMEDIATION}"
 
-    # 결과 저장 확인
+    # 결과 저장 kiểm tra
     verify_result_saved "${ITEM_ID}"
 
     return 0
